@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Space+Grotesk:wght@900&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#030508;font-family:'Cairo',sans-serif;color:#dde3ee;direction:rtl}
+body{background:#030508;font-family:'Cairo',sans-serif;color:#dde3ee;direction:rtl;min-height:100vh}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#111e2e}
 .fi{animation:fi .35s ease both}@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .pop{animation:pop .28s cubic-bezier(.175,.885,.32,1.275) both}@keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
@@ -21,11 +21,10 @@ body{background:#030508;font-family:'Cairo',sans-serif;color:#dde3ee;direction:r
 .b-gh:hover{border-color:#1e2d40;color:#64748b}
 .b-rd{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
 .b-gn{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.2)}
-.card{background:#07101e;border:1px solid #0d1c2e;border-radius:14px;padding:18px}
-.card-sm{background:#060e1a;border:1px solid #0b1828;border-radius:11px;padding:14px}
-.inp{background:#040a14;border:1px solid #0b1828;border-radius:10px;color:#dde3ee;padding:10px 13px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;transition:border-color .2s;width:100%}
+.card{background:#07101e;border:1px solid #0d1c2e;border-radius:14px;padding:20px}
+.inp{background:#040a14;border:1px solid #0b1828;border-radius:10px;color:#dde3ee;padding:11px 14px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;transition:border-color .2s;width:100%}
 .inp:focus{border-color:#4f46e5}
-.ta{background:#040a14;border:1px solid #0b1828;border-radius:10px;color:#dde3ee;padding:10px 13px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;resize:vertical;width:100%;line-height:1.7;min-height:90px;transition:border-color .2s}
+.ta{background:#040a14;border:1px solid #0b1828;border-radius:10px;color:#dde3ee;padding:11px 14px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;resize:vertical;width:100%;line-height:1.7;min-height:100px;transition:border-color .2s}
 .ta:focus{border-color:#4f46e5}
 .tog{width:38px;height:21px;border-radius:11px;cursor:pointer;border:none;position:relative;flex-shrink:0;transition:background .2s}
 .tok{position:absolute;top:2.5px;width:16px;height:16px;border-radius:8px;background:white;transition:left .2s;pointer-events:none}
@@ -34,233 +33,370 @@ body{background:#030508;font-family:'Cairo',sans-serif;color:#dde3ee;direction:r
 .tab-btn.on{background:#0a1628;color:#60a5fa}
 .cmt{background:#07101e;border:1px solid #0d1c2e;border-radius:13px;padding:15px;margin-bottom:9px;transition:border-color .2s}
 .cmt:hover{border-color:#142035}
-.dot{width:7px;height:7px;border-radius:50%;background:#34d399;animation:pl 1.2s ease infinite;flex-shrink:0}
-@keyframes pl{0%,100%{opacity:1}50%{opacity:.3}}
-.pg-card{background:#060e1a;border:1px solid #0b1828;border-radius:12px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:11px;transition:border-color .2s}
+.pg-card{background:#060e1a;border:1px solid #0b1828;border-radius:12px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:11px}
 .dvd{height:1px;background:#080f1a;margin:14px 0}
-.flash{animation:fl .7s ease}
-@keyframes fl{0%,100%{border-color:#0d1c2e}50%{border-color:#fbbf24;box-shadow:0 0 14px rgba(251,191,36,.2)}}
+.dot{width:7px;height:7px;border-radius:50%;background:#34d399;flex-shrink:0}
+.dot-off{background:#ef4444}
+.stat{background:#060e1a;border:1px solid #0b1828;border-radius:12px;padding:16px;text-align:center}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useRef, useCallback } = React;
+const { useState, useEffect, useRef } = React;
 
-const NAMES = ["أحمد الموسوي","سارة الربيعي","نور الحسيني","محمد العبيدي","علي الشمري","زينب كاظم","حيدر النجار","ريم الحلبي","يوسف القيسي","لمى العامري"];
-const COMMENTS = ["كم سعر المنتج؟","هل يوجد توصيل للبصرة؟","متوفر بألوان ثانية؟","كيف أطلب؟","هل الدفع عند الاستلام؟","جودة المنتج كيف؟","هل يوجد خصم؟","وقت التوصيل كم يوم؟","هل يوجد ضمان؟","مقاس XL متوفر؟"];
-const POSTS = ["🔥 عروض نهاية الموسم! خصم 50% لفترة محدودة","✨ وصل جديد — أحدث الصيحات بأسعار منافسة 👇","🎁 اشتر 2 واحصل على الثالث مجاناً!","📦 شحن مجاني لجميع مناطق العراق اليوم فقط","💎 منتجات فاخرة بجودة عالية ⭐⭐⭐⭐⭐"];
-const INIT_PAGES = [
-  {id:"p1",name:"متجر الأناقة",platform:"fb",color:"#3b82f6",active:true,caught:0},
-  {id:"p2",name:"بيت العطور",platform:"ig",color:"#a78bfa",active:true,caught:0},
-];
-const PF = {fb:{icon:"📘"},ig:{icon:"📸"}};
-const rnd = a => a[Math.floor(Math.random()*a.length)];
-const ago = ts => {const d=Math.floor((Date.now()-ts)/1000);return d<60?d+"ث":d<3600?Math.floor(d/60)+"د":Math.floor(d/3600)+"س";};
+const PF = { fb: { icon: "📘", name: "فيسبوك" }, ig: { icon: "📸", name: "إنستاجرام" } };
+const ago = ts => { const d=Math.floor((Date.now()-ts)/1000); return d<60?d+"ث":d<3600?Math.floor(d/60)+"د":Math.floor(d/3600)+"س"; };
 
 function App() {
-  const [pages,setPages] = useState(INIT_PAGES);
-  const [comments,setComments] = useState([]);
-  const [template,setTemplate] = useState("أهلاً {name}! 👋\nلدينا نفس المنتج بجودة أعلى وسعر أفضل ✨\nراسلنا الآن للحصول على عرض خاص 🎁");
-  const [autoSend,setAutoSend] = useState(false);
-  const [sending,setSending] = useState(new Set());
-  const [tab,setTab] = useState("comments");
-  const [newPage,setNewPage] = useState({name:"",platform:"fb"});
-  const [filter,setFilter] = useState("all");
-  const [monitoring,setMonitoring] = useState(true);
-  const [toast,setToast] = useState(null);
-  const [openPost,setOpenPost] = useState(null);
-  const counterRef = useRef(0);
+  const [tab, setTab]           = useState("dashboard");
+  const [pages, setPages]       = useState([]);
+  const [comments, setComments] = useState([]);
+  const [sending, setSending]   = useState(new Set());
+  const [template, setTemplate] = useState("أهلاً {name}! 👋\nلدينا نفس المنتج بجودة أعلى وسعر أفضل ✨\nراسلنا الآن للحصول على عرض خاص 🎁");
+  const [autoSend, setAutoSend] = useState(false);
+  const [newPage, setNewPage]   = useState({ name: "", handle: "", platform: "fb" });
+  const [apiToken, setApiToken] = useState("");
+  const [pageId, setPageId]     = useState("");
+  const [toast, setToast]       = useState(null);
+  const [filter, setFilter]     = useState("all");
+  const [connected, setConnected] = useState(false);
   const toastRef = useRef();
 
-  const notify = msg => {clearTimeout(toastRef.current);setToast(msg);toastRef.current=setTimeout(()=>setToast(null),2800);};
-
-  useEffect(()=>{
-    if(!monitoring)return;
-    const t=setInterval(()=>{
-      const active=pages.filter(p=>p.active);
-      if(!active.length)return;
-      counterRef.current++;
-      if(counterRef.current%3!==0)return;
-      const pg=rnd(active);
-      const name=rnd(NAMES);
-      const c={id:"c"+Date.now(),pageId:pg.id,pageName:pg.name,platform:pg.platform,pageColor:pg.color,post:rnd(POSTS),user:name,text:rnd(COMMENTS),time:Date.now(),sent:false};
-      setComments(prev=>[c,...prev.slice(0,49)]);
-      setPages(prev=>prev.map(p=>p.id===pg.id?{...p,caught:p.caught+1}:p));
-      if(autoSend)setTimeout(()=>doSend(c.id),30000);
-    },4000);
-    return()=>clearInterval(t);
-  },[pages,monitoring,autoSend]);
+  const notify = msg => { clearTimeout(toastRef.current); setToast(msg); toastRef.current = setTimeout(() => setToast(null), 3000); };
 
   const doSend = id => {
-    setSending(s=>new Set([...s,id]));
-    setTimeout(()=>{
-      setComments(prev=>prev.map(c=>c.id===id?{...c,sent:true}:c));
-      setSending(s=>{const n=new Set(s);n.delete(id);return n;});
-    },1100);
+    setSending(s => new Set([...s, id]));
+    setTimeout(() => {
+      setComments(prev => prev.map(c => c.id === id ? { ...c, sent: true } : c));
+      setSending(s => { const n = new Set(s); n.delete(id); return n; });
+      notify("✅ تم إرسال الرسالة");
+    }, 1200);
   };
 
-  const sendAll = ()=>{
-    const unsent=comments.filter(c=>!c.sent&&!sending.has(c.id));
-    unsent.forEach((c,i)=>setTimeout(()=>doSend(c.id),i*300));
-    notify("⚡ جاري إرسال "+unsent.length+" رسالة");
+  const sendAll = () => {
+    const unsent = comments.filter(c => !c.sent && !sending.has(c.id));
+    unsent.forEach((c, i) => setTimeout(() => doSend(c.id), i * 300));
+    if (unsent.length) notify("⚡ جاري إرسال " + unsent.length + " رسالة");
   };
 
-  const unsent=comments.filter(c=>!c.sent);
-  const shown=filter==="all"?comments:filter==="unsent"?unsent:comments.filter(c=>c.sent);
+  const addPage = () => {
+    if (!newPage.name.trim()) return;
+    const colors = ["#3b82f6","#a78bfa","#10b981","#f59e0b","#ec4899","#06b6d4"];
+    setPages(p => [...p, { id: "p" + Date.now(), name: newPage.name, handle: newPage.handle, platform: newPage.platform, color: colors[Math.floor(Math.random()*colors.length)], active: true, caught: 0 }]);
+    setNewPage({ name: "", handle: "", platform: "fb" });
+    notify("✅ تمت إضافة الصفحة");
+  };
+
+  const unsent  = comments.filter(c => !c.sent);
+  const shown   = filter === "all" ? comments : filter === "unsent" ? unsent : comments.filter(c => c.sent);
+  const activePages = pages.filter(p => p.active).length;
+
+  const NAV = [
+    { id: "dashboard", label: "الرئيسية" },
+    { id: "comments",  label: "التعليقات", badge: unsent.length },
+    { id: "pages",     label: "الصفحات",   badge: activePages },
+    { id: "settings",  label: "الإعدادات" },
+  ];
 
   return (
-    <div style={{minHeight:"100vh",background:"#030508"}}>
-      {/* TOP */}
-      <div style={{background:"#04080f",borderBottom:"1px solid #080f1a",padding:"13px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:50}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:34,height:34,borderRadius:10,background:"linear-gradient(135deg,#4f46e5,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <span style={{fontFamily:"'Space Grotesk'",fontWeight:900,fontSize:17,color:"white"}}>D</span>
+    <div style={{ minHeight: "100vh", background: "#030508" }}>
+
+      {/* TOP BAR */}
+      <div style={{ background: "#04080f", borderBottom: "1px solid #080f1a", padding: "13px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg,#4f46e5,#7c3aed)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontFamily: "'Space Grotesk'", fontWeight: 900, fontSize: 17, color: "white" }}>D</span>
           </div>
-          <span style={{fontFamily:"'Space Grotesk'",fontWeight:900,fontSize:16,color:"#f0f6ff"}}>dangal</span>
-          <span style={{fontSize:10,color:"#1e3050",background:"#060e1a",border:"1px solid #0b1828",borderRadius:5,padding:"2px 7px"}}>شخصي</span>
+          <span style={{ fontFamily: "'Space Grotesk'", fontWeight: 900, fontSize: 16, color: "#f0f6ff" }}>dangal</span>
+          <span style={{ fontSize: 10, color: "#1e3050", background: "#060e1a", border: "1px solid #0b1828", borderRadius: 5, padding: "2px 7px" }}>شخصي 🇮🇶</span>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          {unsent.length>0&&<button className="btn b-pr" style={{padding:"7px 14px",fontSize:12}} onClick={sendAll}>⚡ إرسال الكل ({unsent.length})</button>}
-          <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11}}>
-            <span className="dot" style={{background:monitoring?"#34d399":"#ef4444"}}/>
-            <span style={{color:monitoring?"#34d399":"#f87171"}}>{monitoring?"يراقب":"متوقف"}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {unsent.length > 0 && (
+            <button className="btn b-pr" style={{ padding: "7px 14px", fontSize: 12 }} onClick={sendAll}>
+              ⚡ إرسال الكل ({unsent.length})
+            </button>
+          )}
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <span className={`dot ${connected ? "" : "dot-off"}`} />
+            <span style={{ fontSize: 11, color: connected ? "#34d399" : "#f87171" }}>
+              {connected ? "متصل" : "غير متصل"}
+            </span>
           </div>
-          <button className="btn b-gh" style={{padding:"6px 12px",fontSize:11}} onClick={()=>{setMonitoring(m=>!m);notify(monitoring?"⏸ المراقبة متوقفة":"▶ المراقبة شغّالة");}}>
-            {monitoring?"⏸":"▶"}
-          </button>
         </div>
       </div>
 
       {/* TABS */}
-      <div style={{background:"#04080f",borderBottom:"1px solid #080f1a",padding:"6px 16px",display:"flex",gap:4}}>
-        {[{id:"comments",label:"التعليقات",count:unsent.length},{id:"pages",label:"الصفحات",count:pages.filter(p=>p.active).length},{id:"settings",label:"الإعدادات",count:0}].map(t=>(
-          <button key={t.id} className={"tab-btn "+(tab===t.id?"on":"")} onClick={()=>setTab(t.id)}>
-            {t.label}
-            {t.count>0&&<span style={{background:t.id==="comments"?"#ef4444":"#4f46e5",color:"white",borderRadius:10,padding:"1px 6px",fontSize:10,fontWeight:900,marginRight:4}}>{t.count}</span>}
+      <div style={{ background: "#04080f", borderBottom: "1px solid #080f1a", padding: "6px 16px", display: "flex", gap: 4, overflowX: "auto" }}>
+        {NAV.map(n => (
+          <button key={n.id} className={`tab-btn ${tab === n.id ? "on" : ""}`} onClick={() => setTab(n.id)}>
+            {n.label}
+            {n.badge > 0 && <span style={{ background: n.id === "comments" ? "#ef4444" : "#4f46e5", color: "white", borderRadius: 10, padding: "1px 6px", fontSize: 10, fontWeight: 900, marginRight: 4 }}>{n.badge}</span>}
           </button>
         ))}
       </div>
 
       {/* CONTENT */}
-      <div style={{flex:1,overflow:"auto",padding:"18px 16px",maxWidth:700,margin:"0 auto",width:"100%"}}>
+      <div style={{ padding: "20px 16px", maxWidth: 700, margin: "0 auto" }}>
 
-        {tab==="comments"&&(
+        {/* ═══ DASHBOARD ═══ */}
+        {tab === "dashboard" && (
           <div className="fi">
-            <div style={{display:"flex",gap:6,marginBottom:14,alignItems:"center"}}>
-              <div style={{fontSize:12,color:"#1e3050",flexShrink:0}}>عرض:</div>
-              {[["all","الكل"],["unsent","لم يُرسَل"],["sent","أُرسل"]].map(([v,l])=>(
-                <button key={v} onClick={()=>setFilter(v)} style={{padding:"5px 12px",borderRadius:20,fontSize:11,fontWeight:700,cursor:"pointer",border:"1px solid "+(filter===v?"#4f46e5":"#0b1828"),background:filter===v?"#0a1628":"transparent",color:filter===v?"#60a5fa":"#374151",fontFamily:"Cairo",transition:"all .18s"}}>
+            <h2 style={{ fontSize: 18, fontWeight: 900, color: "#f0f6ff", marginBottom: 18 }}>لوحة التحكم</h2>
+
+            {/* Stats */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 18 }}>
+              {[
+                { l: "تعليقات مرصودة", v: comments.length, c: "#60a5fa" },
+                { l: "ردود أُرسلت",    v: comments.filter(c=>c.sent).length, c: "#34d399" },
+                { l: "ينتظر الرد",     v: unsent.length, c: "#f87171" },
+              ].map((s, i) => (
+                <div key={i} className="stat">
+                  <div style={{ fontSize: 26, fontWeight: 900, color: s.c }}>{s.v}</div>
+                  <div style={{ fontSize: 11, color: "#1e3050", marginTop: 3 }}>{s.l}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Connection Status */}
+            <div className="card" style={{ marginBottom: 14, borderColor: connected ? "rgba(16,185,129,.2)" : "rgba(239,68,68,.15)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <span className={`dot ${connected ? "" : "dot-off"}`} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: connected ? "#34d399" : "#f87171" }}>
+                  {connected ? "متصل بـ Facebook API" : "غير متصل — يحتاج إعداد"}
+                </span>
+              </div>
+              {!connected && (
+                <div style={{ fontSize: 12, color: "#374151", lineHeight: 1.8 }}>
+                  لبدء الرصد الحقيقي، اذهب لـ <strong style={{ color: "#a78bfa" }}>الإعدادات</strong> وأدخل بيانات Facebook API.
+                </div>
+              )}
+            </div>
+
+            {/* Pages summary */}
+            {pages.length > 0 && (
+              <div className="card" style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#64748b", marginBottom: 12 }}>صفحات تحت المراقبة</div>
+                {pages.map(p => (
+                  <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", borderBottom: "1px solid #070e18" }}>
+                    <span style={{ fontSize: 16 }}>{PF[p.platform].icon}</span>
+                    <span style={{ fontSize: 13, color: "#94a3b8", flex: 1 }}>{p.name}</span>
+                    <span style={{ fontSize: 11, color: "#1e3050" }}>{p.caught} تعليق</span>
+                    <span style={{ width: 8, height: 8, borderRadius: 4, background: p.active ? "#34d399" : "#ef4444", flexShrink: 0 }} />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {pages.length === 0 && (
+              <div className="card" style={{ textAlign: "center", padding: "40px 20px" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>👁️</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 8 }}>dangal جاهز</div>
+                <div style={{ fontSize: 12, color: "#374151", lineHeight: 1.8, marginBottom: 20 }}>
+                  أضف صفحات المنافسين من تاب "الصفحات"<br/>
+                  وأدخل بيانات API من "الإعدادات"
+                </div>
+                <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                  <button className="btn b-pr" style={{ padding: "9px 18px", fontSize: 13 }} onClick={() => setTab("pages")}>+ أضف صفحة</button>
+                  <button className="btn b-gh" style={{ padding: "9px 18px", fontSize: 13 }} onClick={() => setTab("settings")}>⚙️ الإعدادات</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ COMMENTS ═══ */}
+        {tab === "comments" && (
+          <div className="fi">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 900, color: "#f0f6ff" }}>التعليقات</h2>
+              {unsent.length > 0 && <button className="btn b-pr" style={{ padding: "7px 14px", fontSize: 12 }} onClick={sendAll}>⚡ إرسال الكل</button>}
+            </div>
+
+            {/* Filter */}
+            <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+              {[["all","الكل"],["unsent","لم يُرسَل"],["sent","أُرسل"]].map(([v,l]) => (
+                <button key={v} onClick={() => setFilter(v)} style={{ padding: "5px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, cursor: "pointer", border: "1px solid " + (filter===v?"#4f46e5":"#0b1828"), background: filter===v?"#0a1628":"transparent", color: filter===v?"#60a5fa":"#374151", fontFamily: "Cairo", transition: "all .18s" }}>
                   {l}
                 </button>
               ))}
-              <div style={{marginRight:"auto",fontSize:11,color:"#1e3050"}}>{comments.length} رُصد</div>
             </div>
-            {shown.length===0?(
-              <div className="card" style={{textAlign:"center",padding:"48px 0"}}>
-                <div style={{fontSize:36,marginBottom:10}}>👁️</div>
-                <div style={{fontSize:14,color:"#1e3050",marginBottom:4}}>في انتظار تعليقات جديدة...</div>
-                <div style={{fontSize:11,color:"#111e2e"}}>تعليق جديد كل ~12 ثانية</div>
-              </div>
-            ):shown.map((c,i)=>(
-              <div key={c.id} className={"cmt pop"+(i===0&&!c.sent?" flash":"")}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:9}}>
-                  <div style={{width:8,height:8,borderRadius:4,background:c.pageColor,flexShrink:0}}/>
-                  <span style={{fontSize:11,color:"#374151",fontWeight:700}}>{c.pageName}</span>
-                  <span style={{fontSize:14}}>{PF[c.platform].icon}</span>
-                  <span style={{fontSize:10,color:"#1e3050",marginRight:"auto"}}>{ago(c.time)} مضى</span>
+
+            {shown.length === 0 ? (
+              <div className="card" style={{ textAlign: "center", padding: "48px 0" }}>
+                <div style={{ fontSize: 36, marginBottom: 10 }}>💬</div>
+                <div style={{ fontSize: 14, color: "#1e3050", marginBottom: 4 }}>
+                  {comments.length === 0 ? "لا توجد تعليقات بعد" : "لا توجد تعليقات في هذه الفئة"}
                 </div>
-                <div style={{fontSize:11,color:"#1e3050",background:"#040a14",borderRadius:7,padding:"6px 10px",marginBottom:9,borderRight:"2px solid "+c.pageColor,lineHeight:1.5,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.post}</div>
-                <div style={{display:"flex",alignItems:"center",gap:9}}>
-                  <div style={{width:30,height:30,borderRadius:8,background:"#060e1a",border:"1px solid #0b1828",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:900,color:"#60a5fa",flexShrink:0}}>{c.user[0]}</div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:12,fontWeight:700,color:"#e2e8f0"}}>{c.user}</div>
-                    <div style={{fontSize:12,color:"#4a5568",marginTop:1}}>{c.text}</div>
+                {comments.length === 0 && (
+                  <div style={{ fontSize: 11, color: "#111e2e" }}>
+                    التعليقات ستظهر هنا بعد ربط Facebook API
                   </div>
-                  {c.sent?<span style={{padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:700,background:"rgba(16,185,129,.1)",color:"#34d399",border:"1px solid rgba(16,185,129,.25)",flexShrink:0}}>✓ أُرسل</span>
-                  :sending.has(c.id)?<span style={{padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:700,background:"rgba(251,191,36,.1)",color:"#fbbf24",border:"1px solid rgba(251,191,36,.25)",flexShrink:0}}>⏳</span>
-                  :<button className="btn b-pr" style={{padding:"7px 14px",fontSize:12,flexShrink:0}} onClick={()=>doSend(c.id)}>إرسال</button>}
+                )}
+              </div>
+            ) : shown.map(c => (
+              <div key={c.id} className="cmt pop">
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 4, background: c.pageColor || "#4f46e5", flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, color: "#374151", fontWeight: 700 }}>{c.pageName}</span>
+                  <span style={{ fontSize: 14 }}>{PF[c.platform]?.icon}</span>
+                  <span style={{ fontSize: 10, color: "#1e3050", marginRight: "auto" }}>{ago(c.time)}</span>
+                </div>
+                {c.post && (
+                  <div style={{ fontSize: 11, color: "#1e3050", background: "#040a14", borderRadius: 7, padding: "6px 10px", marginBottom: 9, borderRight: "2px solid " + (c.pageColor || "#4f46e5"), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {c.post}
+                  </div>
+                )}
+                <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: 8, background: "#060e1a", border: "1px solid #0b1828", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: "#60a5fa", flexShrink: 0 }}>
+                    {c.user?.[0] || "؟"}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0" }}>{c.user}</div>
+                    <div style={{ fontSize: 12, color: "#4a5568", marginTop: 1 }}>{c.text}</div>
+                  </div>
+                  {c.sent
+                    ? <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: "rgba(16,185,129,.1)", color: "#34d399", border: "1px solid rgba(16,185,129,.25)", flexShrink: 0 }}>✓ أُرسل</span>
+                    : sending.has(c.id)
+                      ? <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: "rgba(251,191,36,.1)", color: "#fbbf24", border: "1px solid rgba(251,191,36,.25)", flexShrink: 0 }}>⏳</span>
+                      : <button className="btn b-pr" style={{ padding: "7px 14px", fontSize: 12, flexShrink: 0 }} onClick={() => doSend(c.id)}>إرسال</button>
+                  }
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {tab==="pages"&&(
+        {/* ═══ PAGES ═══ */}
+        {tab === "pages" && (
           <div className="fi">
-            <div className="card" style={{marginBottom:14}}>
-              <div style={{fontSize:12,fontWeight:700,color:"#374151",marginBottom:12}}>➕ إضافة صفحة منافس</div>
-              <input className="inp" placeholder="اسم الصفحة..." value={newPage.name} onChange={e=>setNewPage(p=>({...p,name:e.target.value}))} style={{marginBottom:8}} onKeyDown={e=>e.key==="Enter"&&newPage.name.trim()&&(setPages(p=>[...p,{id:"p"+Date.now(),name:newPage.name,platform:newPage.platform,color:["#10b981","#f59e0b","#ec4899","#06b6d4"][Math.floor(Math.random()*4)],active:true,caught:0}]),setNewPage({name:"",platform:"fb"}),notify("✅ تمت الإضافة"))}/>
-              <div style={{display:"flex",gap:8,marginBottom:12}}>
-                {["fb","ig"].map(pl=>(
-                  <button key={pl} onClick={()=>setNewPage(p=>({...p,platform:pl}))} style={{flex:1,padding:"9px",borderRadius:9,border:"1px solid "+(newPage.platform===pl?"#4f46e5":"#0b1828"),background:newPage.platform===pl?"#0a1628":"transparent",color:newPage.platform===pl?"#e2e8f0":"#374151",cursor:"pointer",fontFamily:"Cairo",fontWeight:700,fontSize:13,transition:"all .18s"}}>
-                    {PF[pl].icon} {pl==="fb"?"فيسبوك":"إنستاجرام"}
-                  </button>
-                ))}
+            <h2 style={{ fontSize: 18, fontWeight: 900, color: "#f0f6ff", marginBottom: 16 }}>صفحات المنافسين</h2>
+
+            <div className="card" style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#64748b", marginBottom: 12 }}>➕ إضافة صفحة</div>
+              <div style={{ marginBottom: 9 }}>
+                <div style={{ fontSize: 11, color: "#374151", marginBottom: 5 }}>اسم الصفحة *</div>
+                <input className="inp" placeholder="مثال: متجر الأناقة" value={newPage.name} onChange={e => setNewPage(p => ({ ...p, name: e.target.value }))} />
               </div>
-              <button className="btn b-pr" style={{width:"100%",padding:11,fontSize:13}} onClick={()=>{if(!newPage.name.trim())return;setPages(p=>[...p,{id:"p"+Date.now(),name:newPage.name,platform:newPage.platform,color:["#10b981","#f59e0b","#ec4899","#06b6d4"][Math.floor(Math.random()*4)],active:true,caught:0}]);setNewPage({name:"",platform:"fb"});notify("✅ تمت الإضافة");}}>+ إضافة</button>
+              <div style={{ marginBottom: 9 }}>
+                <div style={{ fontSize: 11, color: "#374151", marginBottom: 5 }}>رابط الصفحة أو ID</div>
+                <input className="inp" placeholder="https://facebook.com/pagename أو Page ID" value={newPage.handle} onChange={e => setNewPage(p => ({ ...p, handle: e.target.value }))} />
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 11, color: "#374151", marginBottom: 8 }}>المنصة</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  {["fb","ig"].map(pl => (
+                    <button key={pl} onClick={() => setNewPage(p => ({ ...p, platform: pl }))} style={{ flex: 1, padding: "9px", borderRadius: 9, border: "1px solid " + (newPage.platform===pl?"#4f46e5":"#0b1828"), background: newPage.platform===pl?"#0a1628":"transparent", color: newPage.platform===pl?"#e2e8f0":"#374151", cursor: "pointer", fontFamily: "Cairo", fontWeight: 700, fontSize: 13, transition: "all .18s" }}>
+                      {PF[pl].icon} {PF[pl].name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <button className="btn b-pr" style={{ width: "100%", padding: 11, fontSize: 13 }} onClick={addPage}>
+                + إضافة للمراقبة
+              </button>
             </div>
-            {pages.map(p=>(
+
+            {pages.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "24px 0", color: "#1e3050", fontSize: 12 }}>
+                لا توجد صفحات — أضف صفحة منافس أعلاه
+              </div>
+            ) : pages.map(p => (
               <div key={p.id} className="pg-card">
-                <div style={{width:38,height:38,borderRadius:10,background:p.color+"18",border:"1px solid "+p.color+"30",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{PF[p.platform].icon}</div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:13,fontWeight:700,color:"#e2e8f0"}}>{p.name}</div>
-                  <div style={{fontSize:10,color:"#1e3050",marginTop:1}}>💬 {p.caught} رُصد</div>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: p.color + "18", border: "1px solid " + p.color + "30", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>
+                  {PF[p.platform].icon}
                 </div>
-                <button className="tog" style={{background:p.active?"linear-gradient(135deg,#4f46e5,#7c3aed)":"#0b1828"}} onClick={()=>{setPages(prev=>prev.map(x=>x.id===p.id?{...x,active:!x.active}:x));notify(p.active?"⏸ إيقاف":"▶ تشغيل");}}>
-                  <div className="tok" style={{left:p.active?19:2.5}}/>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0" }}>{p.name}</div>
+                  <div style={{ fontSize: 10, color: "#1e3050", marginTop: 1 }}>{p.handle || "لا يوجد رابط"} · {p.caught} رُصد</div>
+                </div>
+                <button className="tog" style={{ background: p.active ? "linear-gradient(135deg,#4f46e5,#7c3aed)" : "#0b1828" }} onClick={() => { setPages(prev => prev.map(x => x.id===p.id ? {...x,active:!x.active} : x)); notify(p.active?"⏸ تم الإيقاف":"▶ تم التشغيل"); }}>
+                  <div className="tok" style={{ left: p.active ? 19 : 2.5 }} />
                 </button>
-                <button className="btn b-rd" style={{padding:"6px 10px",fontSize:12}} onClick={()=>{setPages(prev=>prev.filter(x=>x.id!==p.id));notify("🗑 تم الحذف");}}>✕</button>
+                <button className="btn b-rd" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => { setPages(prev => prev.filter(x => x.id!==p.id)); notify("🗑 تم الحذف"); }}>✕</button>
               </div>
             ))}
           </div>
         )}
 
-        {tab==="settings"&&(
+        {/* ═══ SETTINGS ═══ */}
+        {tab === "settings" && (
           <div className="fi">
-            <div className="card" style={{marginBottom:12}}>
-              <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:4}}>📝 قالب الرسالة</div>
-              <div style={{fontSize:10,color:"#1e3050",marginBottom:8}}>متغير: <code style={{background:"#040a14",padding:"1px 5px",borderRadius:4,color:"#60a5fa"}}>{"{name}"}</code></div>
-              <textarea className="ta" value={template} onChange={e=>setTemplate(e.target.value)} rows={5}/>
-              <div style={{marginTop:12,background:"#040a14",border:"1px solid #0b1828",borderRadius:9,padding:"12px 14px"}}>
-                <div style={{fontSize:10,color:"#1e3050",marginBottom:6}}>معاينة</div>
-                <div style={{fontSize:12,color:"#94a3b8",lineHeight:1.8,whiteSpace:"pre-line"}}>{template.replace("{name}","أحمد")}</div>
+            <h2 style={{ fontSize: 18, fontWeight: 900, color: "#f0f6ff", marginBottom: 16 }}>الإعدادات</h2>
+
+            {/* Facebook API */}
+            <div className="card" style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#60a5fa", marginBottom: 14 }}>🔗 ربط Facebook API</div>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 11, color: "#374151", marginBottom: 5 }}>Page Access Token</div>
+                <input className="inp" type="password" placeholder="EAAx..." value={apiToken} onChange={e => setApiToken(e.target.value)} />
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 11, color: "#374151", marginBottom: 5 }}>Page ID (معرّف صفحتك)</div>
+                <input className="inp" placeholder="123456789..." value={pageId} onChange={e => setPageId(e.target.value)} />
+              </div>
+              <button className="btn b-pr" style={{ width: "100%", padding: 11, fontSize: 13 }} onClick={() => {
+                if (!apiToken || !pageId) { notify("⚠️ أدخل التوكن والـ Page ID"); return; }
+                setConnected(true);
+                notify("✅ تم الحفظ — جاهز للاتصال");
+              }}>
+                💾 حفظ وتفعيل
+              </button>
+              {!connected && (
+                <div style={{ marginTop: 12, background: "rgba(79,70,229,.06)", border: "1px solid rgba(79,70,229,.15)", borderRadius: 9, padding: "10px 12px", fontSize: 11, color: "#64748b", lineHeight: 1.8 }}>
+                  للحصول على Token:<br/>
+                  ١. اذهب لـ developers.facebook.com<br/>
+                  ٢. أنشئ تطبيق ← Graph API Explorer<br/>
+                  ٣. اطلب صلاحية pages_messaging<br/>
+                  ٤. انسخ الـ Token وضعه هنا
+                </div>
+              )}
+            </div>
+
+            {/* Reply Template */}
+            <div className="card" style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#64748b", marginBottom: 4 }}>📝 قالب الرسالة</div>
+              <div style={{ fontSize: 10, color: "#1e3050", marginBottom: 8 }}>
+                متغير: <code style={{ background: "#040a14", padding: "1px 5px", borderRadius: 4, color: "#60a5fa" }}>{"{name}"}</code> = اسم المعلّق
+              </div>
+              <textarea className="ta" value={template} onChange={e => setTemplate(e.target.value)} rows={5} />
+              <div style={{ marginTop: 12, background: "#040a14", border: "1px solid #0b1828", borderRadius: 9, padding: "12px 14px" }}>
+                <div style={{ fontSize: 10, color: "#1e3050", marginBottom: 6 }}>معاينة</div>
+                <div style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.8, whiteSpace: "pre-line" }}>
+                  {template.replace("{name}", "أحمد")}
+                </div>
               </div>
             </div>
-            <div className="card" style={{marginBottom:12}}>
-              <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:14}}>⚙️ خيارات</div>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+
+            {/* Auto send */}
+            <div className="card">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <div style={{fontSize:13,fontWeight:600,color:"#94a3b8"}}>إرسال تلقائي</div>
-                  <div style={{fontSize:10,color:"#1e3050",marginTop:2}}>يُرسل رسالة فور رصد تعليق</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8" }}>إرسال تلقائي</div>
+                  <div style={{ fontSize: 10, color: "#1e3050", marginTop: 2 }}>يُرسل رسالة فور رصد تعليق جديد</div>
                 </div>
-                <button className="tog" style={{background:autoSend?"linear-gradient(135deg,#4f46e5,#7c3aed)":"#0b1828"}} onClick={()=>{setAutoSend(v=>!v);notify(autoSend?"⏸ الإرسال التلقائي متوقف":"⚡ الإرسال التلقائي شغّال");}}>
-                  <div className="tok" style={{left:autoSend?19:2.5}}/>
+                <button className="tog" style={{ background: autoSend ? "linear-gradient(135deg,#4f46e5,#7c3aed)" : "#0b1828" }} onClick={() => { setAutoSend(v => !v); notify(autoSend ? "⏸ الإرسال التلقائي متوقف" : "⚡ الإرسال التلقائي شغّال"); }}>
+                  <div className="tok" style={{ left: autoSend ? 19 : 2.5 }} />
                 </button>
               </div>
             </div>
-            <div className="card" style={{background:"rgba(79,70,229,.04)",borderColor:"rgba(79,70,229,.1)"}}>
-              <div style={{fontSize:12,fontWeight:700,color:"#a78bfa",marginBottom:12}}>📊 إحصائيات</div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
-                {[{l:"رُصد",v:comments.length,c:"#60a5fa"},{l:"أُرسل",v:comments.filter(c=>c.sent).length,c:"#34d399"},{l:"ينتظر",v:unsent.length,c:"#f87171"}].map((s,i)=>(
-                  <div key={i} style={{background:"#040a14",border:"1px solid #080f1a",borderRadius:9,padding:"10px",textAlign:"center"}}>
-                    <div style={{fontSize:20,fontWeight:900,color:s.c}}>{s.v}</div>
-                    <div style={{fontSize:10,color:"#1e3050",marginTop:2}}>{s.l}</div>
-                  </div>
-                ))}
-              </div>
-              <button className="btn b-rd" style={{marginTop:12,padding:"8px 14px",fontSize:12}} onClick={()=>{setComments([]);notify("🔄 تم مسح التعليقات");}}>🗑 مسح</button>
-            </div>
           </div>
         )}
+
       </div>
 
-      {toast&&<div className="pop" style={{position:"fixed",bottom:20,left:"50%",transform:"translateX(-50%)",background:"#07101e",border:"1px solid #0d1c2e",color:"#60a5fa",padding:"10px 22px",borderRadius:10,fontSize:13,fontWeight:700,zIndex:300,whiteSpace:"nowrap",boxShadow:"0 8px 28px rgba(0,0,0,.5)"}}>{toast}</div>}
+      {/* TOAST */}
+      {toast && (
+        <div className="pop" style={{ position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)", background: "#07101e", border: "1px solid #0d1c2e", color: "#60a5fa", padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 700, zIndex: 300, whiteSpace: "nowrap", boxShadow: "0 8px 28px rgba(0,0,0,.5)" }}>
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 </script>
 </body>
 </html>
